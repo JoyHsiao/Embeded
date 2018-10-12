@@ -72,7 +72,7 @@ void MainWindow::on_ThresholdButton_clicked()
 {
     QString str = ui->lineEdit->text();
     time_exec.start();
-    threshold(grayimg, otsu, str.toInt(), 255, THRESH_BINARY);
+    threshold(blurimg, otsu, str.toInt(), 255, THRESH_BINARY);
 
     myShowImage = convertProcess(otsu);
     ui->label_4->setPixmap(QPixmap::fromImage(myShowImage).scaled(this->ui->label_4->size()));
