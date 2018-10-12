@@ -66,6 +66,10 @@ private:
     Ui::MainWindow *ui;
     cv::Mat image;
     cv::Mat grayimg;
+    cv::Mat eqhist;
+    cv::Mat blurimg;
+    cv::Mat otsu;
+    cv::Mat morphy;
     QImage myShowImage;
     QTime time_exec;
     QString time;

@@ -16,8 +16,8 @@ MainWindow::~MainWindow()
 
 void MainWindow::on_OpenImageButton_clicked()
 {
-    //QString fileName = QFileDialog::getOpenFileName(ui->label_1, "Open Image","/home/ubuntu/Lab2/Image", "Image Files (*.png *.bmp *.jpg)");
-    QString fileName = QFileDialog::getOpenFileName(ui->label_1, "Open Image","/home/joy_hsiao/Nvidea/TK1/106598009/Lab/Lab2/Image", "Image Files (*.png *.bmp *.jpg)");
+    QString fileName = QFileDialog::getOpenFileName(ui->label_1, "Open Image","/home/ubuntu/Embeded/Lab2/Image", "Image Files (*.png *.bmp *.jpg)");
+    //QString fileName = QFileDialog::getOpenFileName(ui->label_1, "Open Image","/home/joy_hsiao/Nvidea/TK1/106598009/Lab/Lab2/Image", "Image Files (*.png *.bmp *.jpg)");
 
     if(fileName.isEmpty())
         return;
@@ -51,10 +51,9 @@ void MainWindow::on_GrayButton_clicked()
 
 void MainWindow::on_EqHistButton_clicked()
 {
-    cv::Mat histImg;
     time_exec.start();
-    equalizeHist(grayimg, histImg);
-    myShowImage = convertProcess(histImg);
+    equalizeHist(grayimg, eqhist);
+    myShowImage = convertProcess(eqhist);
     ui->label_2->setPixmap(QPixmap::fromImage(myShowImage).scaled(this->ui->label_2->size()));
     time = QString::number(time_exec.elapsed(),10);
     ui->TimeLabel->setText("execute time : " +time +" ms");
@@ -72,11 +71,10 @@ void MainWindow::on_lineEdit_textChanged(const QString &str)
 void MainWindow::on_ThresholdButton_clicked()
 {
     QString str = ui->lineEdit->text();
-    cv::Mat thresholdImg;
     time_exec.start();
-    threshold(grayimg, thresholdImg, str.toInt(), 255, THRESH_BINARY);
+    threshold(grayimg, otsu, str.toInt(), 255, THRESH_BINARY);
 
-    myShowImage = convertProcess(thresholdImg);
+    myShowImage = convertProcess(otsu);
     ui->label_4->setPixmap(QPixmap::fromImage(myShowImage).scaled(this->ui->label_4->size()));
     time = QString::number(time_exec.elapsed(),10);
     ui->TimeLabel->setText("execute time : " +time +" ms");
@@ -84,11 +82,10 @@ void MainWindow::on_ThresholdButton_clicked()
 
 void MainWindow::on_BlurButton_clicked()
 {
-    cv::Mat blurImg;
     time_exec.start();
-    blur(grayimg,blurImg, Size(3,3));
+    blur(grayimg,blurimg, Size(3,3));
 
-    myShowImage = convertProcess(blurImg);
+    myShowImage = convertProcess(blurimg);
     ui->label_3->setPixmap(QPixmap::fromImage(myShowImage).scaled(this->ui->label_3->size()));
     time = QString::number(time_exec.elapsed(),10);
     ui->TimeLabel->setText("execute time : " +time +" ms");
@@ -96,11 +93,10 @@ void MainWindow::on_BlurButton_clicked()
 
 void MainWindow::on_MedianButton_clicked()
 {
-    cv::Mat medianImg;
     time_exec.start();
-    medianBlur(grayimg, medianImg, 5);
+    medianBlur(grayimg, blurimg, 5);
 
-    myShowImage = convertProcess(medianImg);
+    myShowImage = convertProcess(blurimg);
     ui->label_3->setPixmap(QPixmap::fromImage(myShowImage).scaled(this->ui->label_3->size()));
     time = QString::number(time_exec.elapsed(),10);
     ui->TimeLabel->setText("execute time : " +time +" ms");
@@ -108,11 +104,10 @@ void MainWindow::on_MedianButton_clicked()
 
 void MainWindow::on_GaussianButton_clicked()
 {
-    cv::Mat gaussianImg;
     time_exec.start();
-    GaussianBlur(grayimg, gaussianImg, Size(5,5), 0, 0);
+    GaussianBlur(grayimg, blurimg, Size(5,5), 0, 0);
 
-    myShowImage = convertProcess(gaussianImg);
+    myShowImage = convertProcess(blurimg);
     ui->label_3->setPixmap(QPixmap::fromImage(myShowImage).scaled(this->ui->label_3->size()));
     time = QString::number(time_exec.elapsed(),10);
     ui->TimeLabel->setText("execute time : " +time +" ms");
@@ -120,11 +115,10 @@ void MainWindow::on_GaussianButton_clicked()
 
 void MainWindow::on_BilateralButton_clicked()
 {
-    cv::Mat bilateralImg;
     time_exec.start();
-    bilateralFilter(grayimg, bilateralImg, 5, 30, 30);
+    bilateralFilter(grayimg, blurimg, 5, 30, 30);
 
-    myShowImage = convertProcess(bilateralImg);
+    myShowImage = convertProcess(blurimg);
     ui->label_3->setPixmap(QPixmap::fromImage(myShowImage).scaled(this->ui->label_3->size()));
     time = QString::number(time_exec.elapsed(),10);
     ui->TimeLabel->setText("execute time : " +time +" ms");
@@ -133,11 +127,10 @@ void MainWindow::on_BilateralButton_clicked()
 void MainWindow::on_OtsuButton_clicked()
 {
     QString str = ui->lineEdit->text();
-    cv::Mat thresholdImg;
     time_exec.start();
-    threshold(grayimg, thresholdImg, str.toInt(), 255, THRESH_BINARY|THRESH_OTSU);
+    threshold(blurimg, otsu, str.toInt(), 255, THRESH_BINARY|THRESH_OTSU);
 
-    myShowImage = convertProcess(thresholdImg);
+    myShowImage = convertProcess(otsu);
     ui->label_4->setPixmap(QPixmap::fromImage(myShowImage).scaled(this->ui->label_4->size()));
     time = QString::number(time_exec.elapsed(),10);
     ui->TimeLabel->setText("execute time : " +time +" ms");
@@ -145,10 +138,9 @@ void MainWindow::on_OtsuButton_clicked()
 
 void MainWindow::on_DilateButton_clicked()
 {
-    cv::Mat dilateImg;
     time_exec.start();
-    dilate(grayimg,dilateImg,Mat());
-    myShowImage = convertProcess(dilateImg);
+    dilate(otsu,morphy,Mat());
+    myShowImage = convertProcess(morphy);
     ui->label_5->setPixmap(QPixmap::fromImage(myShowImage).scaled(this->ui->label_5->size()));
     time = QString::number(time_exec.elapsed(),10);
     ui->TimeLabel->setText("execute time : " +time +" ms");
@@ -156,10 +148,9 @@ void MainWindow::on_DilateButton_clicked()
 
 void MainWindow::on_ErodeButton_clicked()
 {
-    cv::Mat erodeImg;
     time_exec.start();
-    erode(grayimg,erodeImg,Mat());
-    myShowImage = convertProcess(erodeImg);
+    erode(otsu,morphy,Mat());
+    myShowImage = convertProcess(morphy);
     ui->label_5->setPixmap(QPixmap::fromImage(myShowImage).scaled(this->ui->label_5->size()));
     time = QString::number(time_exec.elapsed(),10);
     ui->TimeLabel->setText("execute time : " +time +" ms");
@@ -167,10 +158,9 @@ void MainWindow::on_ErodeButton_clicked()
 
 void MainWindow::on_OpenButton_clicked()
 {
-    cv::Mat openImg;
     time_exec.start();
-    morphologyEx(grayimg,openImg,MORPH_OPEN,Mat(), Point(-1,-1), 2);
-    myShowImage = convertProcess(openImg);
+    morphologyEx(otsu,morphy,MORPH_OPEN,Mat(), Point(-1,-1), 2);
+    myShowImage = convertProcess(morphy);
     ui->label_5->setPixmap(QPixmap::fromImage(myShowImage).scaled(this->ui->label_5->size()));
     time = QString::number(time_exec.elapsed(),10);
     ui->TimeLabel->setText("execute time : " +time +" ms");
@@ -178,10 +168,9 @@ void MainWindow::on_OpenButton_clicked()
 
 void MainWindow::on_CloseButton_clicked()
 {
-    cv::Mat closeImg;
     time_exec.start();
-    morphologyEx(grayimg,closeImg,MORPH_CLOSE,Mat(), Point(-1,-1), 2);
-    myShowImage = convertProcess(closeImg);
+    morphologyEx(otsu,morphy,MORPH_CLOSE,Mat(), Point(-1,-1), 2);
+    myShowImage = convertProcess(morphy);
     ui->label_5->setPixmap(QPixmap::fromImage(myShowImage).scaled(this->ui->label_5->size()));
     time = QString::number(time_exec.elapsed(),10);
     ui->TimeLabel->setText("execute time : " +time +" ms");
@@ -189,20 +178,18 @@ void MainWindow::on_CloseButton_clicked()
 
 void MainWindow::on_GradientButton_clicked()
 {
-    cv::Mat gradientImg;
     time_exec.start();
-    morphologyEx(grayimg,gradientImg,MORPH_GRADIENT,Mat(), Point(-1,-1), 2);
-    myShowImage = convertProcess(gradientImg);
+    morphologyEx(otsu,morphy,MORPH_GRADIENT,Mat(), Point(-1,-1), 2);
+    myShowImage = convertProcess(morphy);
     ui->label_5->setPixmap(QPixmap::fromImage(myShowImage).scaled(this->ui->label_5->size()));
     ui->TimeLabel->setText("execute time : " +time +" ms");
 }
 
 void MainWindow::on_TopHatButton_clicked()
 {
-    cv::Mat tophatImg;
     time_exec.start();
-    morphologyEx(grayimg,tophatImg,MORPH_TOPHAT,Mat(), Point(-1,-1), 2);
-    myShowImage = convertProcess(tophatImg);
+    morphologyEx(otsu,morphy,MORPH_TOPHAT,Mat(), Point(-1,-1), 2);
+    myShowImage = convertProcess(morphy);
     ui->label_5->setPixmap(QPixmap::fromImage(myShowImage).scaled(this->ui->label_5->size()));
     time = QString::number(time_exec.elapsed(),10);
     ui->TimeLabel->setText("execute time : " +time +" ms");
@@ -210,10 +197,9 @@ void MainWindow::on_TopHatButton_clicked()
 
 void MainWindow::on_BlackHatButton_clicked()
 {
-    cv::Mat blackhatImg;
     time_exec.start();
-    morphologyEx(grayimg,blackhatImg,MORPH_BLACKHAT,Mat(), Point(-1,-1), 2);
-    myShowImage = convertProcess(blackhatImg);
+    morphologyEx(otsu,morphy,MORPH_BLACKHAT,Mat(), Point(-1,-1), 2);
+    myShowImage = convertProcess(morphy);
     ui->label_5->setPixmap(QPixmap::fromImage(myShowImage).scaled(this->ui->label_5->size()));
     time = QString::number(time_exec.elapsed(),10);
     ui->TimeLabel->setText("execute time : " +time +" ms");
