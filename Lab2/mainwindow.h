@@ -5,6 +5,8 @@
 #include <QDebug>
 #include <QImage>
 #include <QPixmap>
+#include <QTime>
+#include <QString>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/core/core.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
@@ -46,11 +48,27 @@ private slots:
 
     void on_DilateButton_clicked();
 
+    void on_ErodeButton_clicked();
+
+    void on_OpenButton_clicked();
+
+    void on_CloseButton_clicked();
+
+    void on_GradientButton_clicked();
+
+    void on_TopHatButton_clicked();
+
+    void on_BlackHatButton_clicked();
+
+    void on_ClearButton_clicked();
+
 private:
     Ui::MainWindow *ui;
     cv::Mat image;
     cv::Mat grayimg;
     QImage myShowImage;
+    QTime time_exec;
+    QString time;
 };
 
 #endif // MAINWINDOW_H
