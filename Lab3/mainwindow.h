@@ -36,6 +36,12 @@ private slots:
 
     void on_circle_clicked();
 
+    void on_triangle_clicked();
+
+    void on_rectangle_clicked();
+
+    void on_surf_clicked();
+
 private:
     Ui::MainWindow *ui;
     cv::Mat lImage;
