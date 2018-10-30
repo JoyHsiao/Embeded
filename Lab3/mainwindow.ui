@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>676</width>
-    <height>580</height>
+    <width>1014</width>
+    <height>724</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -17,10 +17,10 @@
    <widget class="QLabel" name="target">
     <property name="geometry">
      <rect>
-      <x>10</x>
+      <x>30</x>
       <y>10</y>
-      <width>301</width>
-      <height>221</height>
+      <width>400</width>
+      <height>300</height>
      </rect>
     </property>
     <property name="layoutDirection">
@@ -42,10 +42,10 @@
    <widget class="QLabel" name="temp">
     <property name="geometry">
      <rect>
-      <x>360</x>
-      <y>20</y>
-      <width>271</width>
-      <height>211</height>
+      <x>470</x>
+      <y>10</y>
+      <width>400</width>
+      <height>300</height>
      </rect>
     </property>
     <property name="frameShape">
@@ -61,9 +61,9 @@
    <widget class="QPushButton" name="openTarget">
     <property name="geometry">
      <rect>
-      <x>40</x>
-      <y>260</y>
-      <width>161</width>
+      <x>50</x>
+      <y>340</y>
+      <width>200</width>
       <height>71</height>
      </rect>
     </property>
@@ -74,9 +74,9 @@
    <widget class="QPushButton" name="openTemp">
     <property name="geometry">
      <rect>
-      <x>40</x>
-      <y>330</y>
-      <width>161</width>
+      <x>50</x>
+      <y>410</y>
+      <width>200</width>
       <height>71</height>
      </rect>
     </property>
@@ -87,9 +87,9 @@
    <widget class="QPushButton" name="closeApp">
     <property name="geometry">
      <rect>
-      <x>40</x>
-      <y>400</y>
-      <width>161</width>
+      <x>50</x>
+      <y>480</y>
+      <width>200</width>
       <height>71</height>
      </rect>
     </property>
@@ -100,9 +100,9 @@
    <widget class="QPushButton" name="rectangle">
     <property name="geometry">
      <rect>
-      <x>250</x>
-      <y>450</y>
-      <width>161</width>
+      <x>360</x>
+      <y>550</y>
+      <width>200</width>
       <height>71</height>
      </rect>
     </property>
@@ -113,9 +113,9 @@
    <widget class="QPushButton" name="triangle">
     <property name="geometry">
      <rect>
-      <x>250</x>
-      <y>380</y>
-      <width>161</width>
+      <x>360</x>
+      <y>480</y>
+      <width>200</width>
       <height>71</height>
      </rect>
     </property>
@@ -126,9 +126,9 @@
    <widget class="QPushButton" name="circle">
     <property name="geometry">
      <rect>
-      <x>250</x>
-      <y>310</y>
-      <width>161</width>
+      <x>360</x>
+      <y>410</y>
+      <width>200</width>
       <height>71</height>
      </rect>
     </property>
@@ -139,9 +139,9 @@
    <widget class="QPushButton" name="countors">
     <property name="geometry">
      <rect>
-      <x>250</x>
-      <y>240</y>
-      <width>161</width>
+      <x>360</x>
+      <y>340</y>
+      <width>200</width>
       <height>71</height>
      </rect>
     </property>
@@ -152,9 +152,9 @@
    <widget class="QPushButton" name="surf">
     <property name="geometry">
      <rect>
-      <x>460</x>
-      <y>280</y>
-      <width>161</width>
+      <x>670</x>
+      <y>340</y>
+      <width>200</width>
       <height>71</height>
      </rect>
     </property>
@@ -168,7 +168,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>676</width>
+     <width>1014</width>
      <height>25</height>
     </rect>
    </property>
@@ -185,5 +185,22 @@
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <resources/>
- <connections/>
+ <connections>
+  <connection>
+   <sender>closeApp</sender>
+   <signal>clicked()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>close()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>131</x>
+     <y>466</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>125</x>
+     <y>514</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
 </ui>
