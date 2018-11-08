@@ -42,80 +42,194 @@ double MainWindow::findAngle(cv::Point p, cv::Point p1, cv::Point p2){ //判斷�
     return acos(dval)*180.0/3.1415926;
 }
 
+void MainWindow::detection(Mat src) {
+    //重新調整圖片大小
+    Mat bgrToRgbImg, inputImg;
+    cv::resize(src, inputImg, Size(src.cols * 3 / 8, src.rows * 3 / 8));
+    picNum++;
+
+    if (picNum == 1) { //第一次初始化
+        extractionImg = Mat::zeros(inputImg.rows, inputImg.cols, inputImg.type());
+        bgrToRgbImg = Mat::zeros(inputImg.rows, inputImg.cols, inputImg.type());
+//        palmImg = Mat::zeros(inputImg.rows, inputImg.cols, inputImg.type());
+//        outputImg = Mat::zeros(inputImg.rows, inputImg.cols, inputImg.type());
+    }
+    else {
+        cvtColor(inputImg, bgrToRgbImg, CV_BGR2YCrCb);
+    //---------------------YCrCb-----------------------
+        Vec3b bgrToRgbImgVec3b, extractionImgVec3b;
+        for (int i = 0; i < inputImg.rows; i++) {
+            for (int j = 0; j < inputImg.cols; j++) {
+                bgrToRgbImgVec3b = bgrToRgbImg.at<Vec3b>(i, j);
+                extractionImgVec3b = extractionImg.at<Vec3b>(i, j);
+                double sky; // Skin Y
+                double skcr; // Skin cr
+                double skcb; // Skin cb
+                sky = bgrToRgbImgVec3b.val[0];
+                skcr = bgrToRgbImgVec3b.val[1];
+                skcb = bgrToRgbImgVec3b.val[2];
+                if (sky >= 70 && sky <= 255 && skcr >= 120 && skcr <= 160 && skcb >= 80 && skcb <= 130) {
+                //顏色是皮膚色
+                    extractionImgVec3b.val[0] = 0;
+                    extractionImgVec3b.val[1] = 0;
+                    extractionImgVec3b.val[2] = 0;
+                }
+                else {
+                //顏色不是皮膚色
+                    extractionImgVec3b.val[0] = 255;
+                    extractionImgVec3b.val[1] = 255;
+                    extractionImgVec3b.val[2] = 255;
+                }
+                extractionImg.at<Vec3b>(i, j) = extractionImgVec3b; //set the (i,j) pixel value
+            }
+        }
+
+        //膨脹與侵蝕- palmImg把手指去掉------------------
+        erode(extractionImg, extractionImg, Mat(), Point(-1, -1), 1);
+        dilate(extractionImg, extractionImg, Mat(), Point(-1, -1), 2);
+        erode(extractionImg, extractionImg, Mat(), Point(-1, -1), 1);
+        dilate(extractionImg, extractionImg, Mat(), Point(-1, -1), 2);
+        erode(extractionImg, extractionImg, Mat(), Point(-1, -1), 1);
+//        extractionImg.copyTo(palmImg);
+//        extractionImg.copyTo(outputImg);
+//        //把outputImg減去palmImg –就會剩下手指-----------------------
+        erode(extractionImg, extractionImg, Mat(), Point(-1, -1), 2);
+        dilate(extractionImg, extractionImg, Mat(), Point(-1, -1), 4);
+//        subtract(outputImg, palmImg, outputImg);
+//        QImage showOutputImg = Mat2QImage(outputImg);
+//        _label->setGeometry(QRect(QPoint(0, 50), QSize(showOutputImg.size().width(), showOutputImg.size().height())));
+//        _label->setPixmap(QPixmap::fromImage(showOutputImg));
+//        cvtColor(extractionImg, outputImg, CV_YCrCb2BGR);
+        countConnected(extractionImg); //去數手指的數目
+
+    }
+}
+
+void MainWindow::countConnected(Mat img) {
+    vector<Rect> comps;
+    Scalar color;
+    Mat temp;
+//    cvtColor(extractionImg, outputImg, CV_YCrCb2BGR);
+    cvtColor(img, temp, CV_BGR2GRAY);
+    for (int i = 0; i < temp.rows; i++) {
+        for (int j = 0; j < temp.cols; j++) {
+            color = temp.at<uchar>(i, j);
+            if (color.val[0] == 0) {
+                Rect rect;
+                floodFill(temp, Point(j, i), Scalar(comps.size()), &rect);
+                comps.push_back(rect);
+            }
+        }
+    }
+    vector<vector<Point> > contours;
+    findContours(temp, contours, RETR_EXTERNAL, CHAIN_APPROX_SIMPLE, Point(0, 0));
+    int fingerNum = 0;
+    for (int i = 0; i < contours.size(); i++) {
+    //calculate area
+        int area = contourArea(contours[i]);
+    //門檻值,判斷是否是手指
+        if (area > 0) {
+            fingerNum++;
+        }
+    }
+    cout << "fingerNum= " << fingerNum << endl;
+    switch (fingerNum) //決定有幾個手指
+    {
+    case 0:
+        ui->label_3->setText("Gesture : NaN");
+        break;
+    case 1:
+        ui->label_3->setText("Gesture : 1");
+        break;
+    case 2:
+        ui->label_3->setText("Gesture : 2");
+        break;
+    case 3:
+        ui->label_3->setText("Gesture : 3");
+        break;
+    case 4:
+        ui->label_3->setText("Gesture : 4");
+        break;
+    case 5:
+        ui->label_3->setText("Gesture : 5");
+        break;
+    }
+}
+
 void MainWindow::on_Open_clicked()
 {
     VideoCapture video(0); // 開攝影機
     if(!video.isOpened())
         qDebug() << "Could not open camera";
 
-    Mat videoFrame;
     while(true){
         video >> videoFrame; // 讀Frame
-
         if(videoFrame.empty()){
             qDebug() << "video frame empty";
             break;
         }
-        waitKey(100);
+        waitKey(3000);
         ui->Camera->setPixmap(QPixmap::fromImage(Mat2QImage(videoFrame)).scaled(this->ui->Camera->size())); //顯示
-
-        Mat camera_detect = videoFrame.clone();
+        detection(videoFrame);
+        Mat grayImg, canny_output;
+        int thresh =30;
+        cvtColor(extractionImg, outputImg, CV_YCrCb2BGR);
+        cvtColor(outputImg, grayImg, CV_BGR2GRAY);
+        Canny( grayImg, canny_output, thresh, thresh*3, 3 );
         std::vector<std::vector<cv::Point> > contours;
         std::vector<cv::Vec4i> hierarchy;
-        Mat grayFrame, canny_output;
-        int thresh =50;
-        cvtColor(videoFrame, grayFrame, CV_RGB2GRAY);
-        Canny(grayFrame, canny_output, thresh, thresh*3, 3);
         cv::findContours(canny_output, contours, hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_NONE); // 找輪廓
         for (std::size_t i = 0; i < contours.size(); i++) { // 畫輪廓
             cv::Scalar color = cv::Scalar(0, 255, 255);
-            cv::drawContours(camera_detect, contours, i, color, 2, 8, hierarchy);
+            cv::drawContours(outputImg, contours, i, color, 2, 8, hierarchy);
         }
-        ui->Detect->setPixmap(QPixmap::fromImage(Mat2QImage(camera_detect)).scaled(this->ui->Detect->size()));
+        ui->Detect->setPixmap(QPixmap::fromImage(Mat2QImage(outputImg)).scaled(this->ui->Detect->size()));
+//        int IndexOfBiggestContour = findBiggestContour(contours); // 找最大輪廓
+//        std::vector<std::vector<int> >hull( contours.size() );
+//        std::vector<std::vector<int> >hullsI( contours.size() );
+//        std::vector<std::vector<Vec4i> >defects( contours.size() );
+//        for( size_t i = 0; i < hull.size(); i++ ){
+//            if (IndexOfBiggestContour == i){
+//            convexHull( Mat(contours[i]), hull[i], false ); // 找凸包
+//            convexityDefects(Mat(contours[i]),hull[i], defects[i]); // 找凹點
+//            break;
+//            }
+//        }
+
+//        std::vector<cv::Point> fingerTips;
+//        std::vector<Vec4i>::iterator d = defects[IndexOfBiggestContour].begin();
+//        bool hasFinger = false;
+//        while( d!=defects[IndexOfBiggestContour].end() ) {
+//            std::vector<cv::Point> contour = contours[IndexOfBiggestContour];
+//            Vec4i& v=(*d);
+//            int startidx=v[0];
+//            int endidx=v[1];
+//            Point ptStart( contour[startidx] ); // point of the contour where the defect begins
+//            Point ptEnd( contour[endidx] ); // point of the contour where the defect ends
+//            float distance = v[3] / 256; // distance between the farthest point and the convex hull
+//            int maxIdx = -1;
+//            double maxDist = 0;
+//            if (distance >= 10)
+//                hasFinger = true;
+//            // Find longest point between starting point and end point
+//            for (int j=startidx+1; j < endidx; j++){
+//                cv::Point p = contour[j];
+//                double d = cv::norm(p - ptStart) + cv::norm(p - ptEnd);
+//                if (d > maxDist){
+//                    maxDist = d;
+//                    maxIdx = j;
+//                }
+//            }
+//            // qualify tip by angle
+//            if (maxIdx >= 0 && findAngle(contour[maxIdx], ptStart, ptEnd) < 90)
+//                fingerTips.push_back(contour[maxIdx]);
+//            d++;
+//        }
+
+
+//        ui->Detect->setPixmap(QPixmap::fromImage(Mat2QImage(camera_detect)).scaled(this->ui->Detect->size()));
     }
 
 
 
-
-
-//    int IndexOfBiggestContour = findBiggestContour(contours); // 找最大輪廓
-//    std::vector<std::vector<int> >hull( contours.size() );
-//    std::vector<std::vector<int> >hullsI( contours.size() );
-//    std::vector<std::vector<Vec4i> >defects( contours.size() );
-//    for( size_t i = 0; i < hull.size(); i++ ){
-//        if (IndexOfBiggestContour == i){
-//        convexHull( Mat(contours[i]), hull[i], false ); // 找凸包
-//        convexityDefects(Mat(contours[i]),hull[i], defects[i]); // 找凹點
-//        break;
-//        }
-//    }
-//    std::vector<cv::Point> fingerTips;
-//    std::vector<Vec4i>::iterator d = defects[IndexOfBiggestContour].begin();
-//    bool hasFinger = false;
-//    while( d!=defects[IndexOfBiggestContour].end() ) {
-//        std::vector<cv::Point> contour = contours[IndexOfBiggestContour];
-//        Vec4i& v=(*d);
-//        int startidx=v[0];
-//        int endidx=v[1];
-//        Point ptStart( contour[startidx] ); // point of the contour where the defect begins
-//        Point ptEnd( contour[endidx] ); // point of the contour where the defect ends
-//        float distance = v[3] / 256; // distance between the farthest point and the convex hull
-//        int maxIdx = -1;
-//        double maxDist = 0;
-//        if (distance >= 10)
-//            hasFinger = true;
-//        // Find longest point between starting point and end point
-//        for (int j=startidx+1; j < endidx; j++){
-//            cv::Point p = contour[j];
-//            double d = cv::norm(p - ptStart) + cv::norm(p - ptEnd);
-//            if (d > maxDist){
-//                maxDist = d;
-//                maxIdx = j;
-//            }
-//        }
-//        // qualify tip by angle
-//        if (maxIdx >= 0 && findAngle(contour[maxIdx], ptStart, ptEnd) < 90)
-//            fingerTips.push_back(contour[maxIdx]);
-//        d++;
-//    }
 }
