@@ -51,8 +51,8 @@ void MainWindow::detection(Mat src) {
     if (picNum == 1) { //第一次初始化
         extractionImg = Mat::zeros(inputImg.rows, inputImg.cols, inputImg.type());
         bgrToRgbImg = Mat::zeros(inputImg.rows, inputImg.cols, inputImg.type());
-//        palmImg = Mat::zeros(inputImg.rows, inputImg.cols, inputImg.type());
-//        outputImg = Mat::zeros(inputImg.rows, inputImg.cols, inputImg.type());
+        palmImg = Mat::zeros(inputImg.rows, inputImg.cols, inputImg.type());
+        outputImg = Mat::zeros(inputImg.rows, inputImg.cols, inputImg.type());
     }
     else {
         cvtColor(inputImg, bgrToRgbImg, CV_BGR2YCrCb);
@@ -88,19 +88,23 @@ void MainWindow::detection(Mat src) {
         erode(extractionImg, extractionImg, Mat(), Point(-1, -1), 1);
         dilate(extractionImg, extractionImg, Mat(), Point(-1, -1), 2);
         erode(extractionImg, extractionImg, Mat(), Point(-1, -1), 1);
-        dilate(extractionImg, extractionImg, Mat(), Point(-1, -1), 2);
+        dilate(extractionImg, extractionImg, Mat(), Point(-1, -1), 1);
         erode(extractionImg, extractionImg, Mat(), Point(-1, -1), 1);
-//        extractionImg.copyTo(palmImg);
-//        extractionImg.copyTo(outputImg);
-//        //把outputImg減去palmImg –就會剩下手指-----------------------
-        erode(extractionImg, extractionImg, Mat(), Point(-1, -1), 2);
-        dilate(extractionImg, extractionImg, Mat(), Point(-1, -1), 4);
-//        subtract(outputImg, palmImg, outputImg);
-//        QImage showOutputImg = Mat2QImage(outputImg);
-//        _label->setGeometry(QRect(QPoint(0, 50), QSize(showOutputImg.size().width(), showOutputImg.size().height())));
-//        _label->setPixmap(QPixmap::fromImage(showOutputImg));
-//        cvtColor(extractionImg, outputImg, CV_YCrCb2BGR);
-        countConnected(extractionImg); //去數手指的數目
+        extractionImg.copyTo(palmImg);
+        extractionImg.copyTo(outputImg);
+        //把outputImg減去palmImg –就會剩下手指-----------------------
+        erode(palmImg, palmImg, Mat(), Point(-1, -1), 6);
+        dilate(palmImg, palmImg, Mat(), Point(-1, -1), 8);
+        //subtract(outputImg, palmImg, outputImg);
+        QImage showOutputImg = Mat2QImage(outputImg);
+        QImage showOutputImg1 = Mat2QImage(palmImg);
+        ui->_label->setPixmap(QPixmap::fromImage(showOutputImg));
+        ui->_label2->setPixmap(QPixmap::fromImage(showOutputImg1));
+        subtract(outputImg, palmImg, outputImg);
+        QImage showOutputImg2 = Mat2QImage(outputImg);
+        ui->_label3->setPixmap(QPixmap::fromImage(showOutputImg2));
+        //cvtColor(extractionImg, outputImg, CV_YCrCb2BGR);
+        countConnected(outputImg); //去數手指的數目
 
     }
 }
@@ -109,12 +113,17 @@ void MainWindow::countConnected(Mat img) {
     vector<Rect> comps;
     Scalar color;
     Mat temp;
+
+    QImage showOutputImg3 = Mat2QImage(img);
+    ui->_label4->setPixmap(QPixmap::fromImage(showOutputImg3));
 //    cvtColor(extractionImg, outputImg, CV_YCrCb2BGR);
     cvtColor(img, temp, CV_BGR2GRAY);
+
     for (int i = 0; i < temp.rows; i++) {
         for (int j = 0; j < temp.cols; j++) {
             color = temp.at<uchar>(i, j);
             if (color.val[0] == 0) {
+                qDebug()<< "("<< i<<", "<<j<<")";
                 Rect rect;
                 floodFill(temp, Point(j, i), Scalar(comps.size()), &rect);
                 comps.push_back(rect);
@@ -128,11 +137,12 @@ void MainWindow::countConnected(Mat img) {
     //calculate area
         int area = contourArea(contours[i]);
     //門檻值,判斷是否是手指
-        if (area > 0) {
+//        qDebug()<< "area="<<area;
+        if (area > 10) {
             fingerNum++;
         }
     }
-    cout << "fingerNum= " << fingerNum << endl;
+    //cout << "fingerNum= " << fingerNum << endl;
     switch (fingerNum) //決定有幾個手指
     {
     case 0:
@@ -155,6 +165,9 @@ void MainWindow::countConnected(Mat img) {
         break;
     }
 }
+
+//void MainWindow::subtract(outputImg, palmImg, outputImg) {
+//}
 
 void MainWindow::on_Open_clicked()
 {

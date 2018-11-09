@@ -27,7 +27,7 @@ public:
     ~MainWindow();
     QImage Mat2QImage(Mat &);
     Mat videoFrame;
-    Mat extractionImg, outputImg, grayImg;
+    Mat extractionImg, outputImg, grayImg, palmImg;
     int picNum =0;
     void detection(cv::Mat);
     void countConnected(cv::Mat);
