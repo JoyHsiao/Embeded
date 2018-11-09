@@ -97,8 +97,8 @@ void MainWindow::detection(Mat src) {
         extractionImg.copyTo(palmImg);
         extractionImg.copyTo(outputImg);
         //把outputImg減去palmImg –就會剩下手指-----------------------
-        erode(palmImg, palmImg, Mat(), Point(-1, -1), 10);
-        dilate(palmImg, palmImg, Mat(), Point(-1, -1), 11);
+        erode(palmImg, palmImg, Mat(), Point(-1, -1), 9);
+        dilate(palmImg, palmImg, Mat(), Point(-1, -1), 10);
         dilate(outputImg, outputImg, Mat(), Point(-1, -1), 1);
         //subtract(outputImg, palmImg, outputImg);
         QImage showOutputImg = Mat2QImage(outputImg);
@@ -145,7 +145,7 @@ void MainWindow::countConnected(Mat img) {
     for (std::size_t i = 0; i < contours.size(); i++) {
         cv::drawContours(temp, contours, i, color, 2, 8, hierarchy);
     }
-    ui->_label4->setPixmap(QPixmap::fromImage(Mat2QImage(temp)).scaled(this->ui->_label4->size()));
+//    ui->_label4->setPixmap(QPixmap::fromImage(Mat2QImage(temp)).scaled(this->ui->_label4->size()));
 
     int fingerNum = 0;
     //qDebug()<<"======"<<contours.size();
@@ -154,7 +154,7 @@ void MainWindow::countConnected(Mat img) {
         int area = contourArea(contours[i]);
     //門檻值,判斷是否是手指
         qDebug()<< "area="<<area;
-        if (area > 20) {
+        if (area > 200) {
             fingerNum++;
             qDebug()<<area;
         }
