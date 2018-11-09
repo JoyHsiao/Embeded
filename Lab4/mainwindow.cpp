@@ -1,5 +1,6 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+#include "QTimer"
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -48,6 +49,8 @@ void MainWindow::detection(Mat src) {
     cv::resize(src, inputImg, Size(src.cols * 3 / 8, src.rows * 3 / 8));
     picNum++;
 
+
+
     if (picNum == 1) { //第一次初始化
         extractionImg = Mat::zeros(inputImg.rows, inputImg.cols, inputImg.type());
         bgrToRgbImg = Mat::zeros(inputImg.rows, inputImg.cols, inputImg.type());
@@ -68,17 +71,18 @@ void MainWindow::detection(Mat src) {
                 sky = bgrToRgbImgVec3b.val[0];
                 skcr = bgrToRgbImgVec3b.val[1];
                 skcb = bgrToRgbImgVec3b.val[2];
-                if (sky >= 70 && sky <= 255 && skcr >= 120 && skcr <= 160 && skcb >= 80 && skcb <= 130) {
-                //顏色是皮膚色
-                    extractionImgVec3b.val[0] = 0;
-                    extractionImgVec3b.val[1] = 0;
-                    extractionImgVec3b.val[2] = 0;
-                }
-                else {
-                //顏色不是皮膚色
+
+                //if (sky >= 70 && sky <= 255 && skcr >= 133 && skcr <= 180 && skcb >= 77 && skcb <= 135) {
+                if (sky >= 70 && sky <= 255 && skcr >= 134 && skcr <= 160 && skcb >= 80 && skcb <= 128) {
+                    //顏色是皮膚色
                     extractionImgVec3b.val[0] = 255;
                     extractionImgVec3b.val[1] = 255;
                     extractionImgVec3b.val[2] = 255;
+                } else {
+                    //顏色不是皮膚色
+                    extractionImgVec3b.val[0] = 0;
+                    extractionImgVec3b.val[1] = 0;
+                    extractionImgVec3b.val[2] = 0;
                 }
                 extractionImg.at<Vec3b>(i, j) = extractionImgVec3b; //set the (i,j) pixel value
             }
@@ -93,8 +97,9 @@ void MainWindow::detection(Mat src) {
         extractionImg.copyTo(palmImg);
         extractionImg.copyTo(outputImg);
         //把outputImg減去palmImg –就會剩下手指-----------------------
-        erode(palmImg, palmImg, Mat(), Point(-1, -1), 6);
-        dilate(palmImg, palmImg, Mat(), Point(-1, -1), 8);
+        erode(palmImg, palmImg, Mat(), Point(-1, -1), 10);
+        dilate(palmImg, palmImg, Mat(), Point(-1, -1), 11);
+        dilate(outputImg, outputImg, Mat(), Point(-1, -1), 1);
         //subtract(outputImg, palmImg, outputImg);
         QImage showOutputImg = Mat2QImage(outputImg);
         QImage showOutputImg1 = Mat2QImage(palmImg);
@@ -114,16 +119,14 @@ void MainWindow::countConnected(Mat img) {
     Scalar color;
     Mat temp;
 
-    QImage showOutputImg3 = Mat2QImage(img);
-    ui->_label4->setPixmap(QPixmap::fromImage(showOutputImg3));
 //    cvtColor(extractionImg, outputImg, CV_YCrCb2BGR);
     cvtColor(img, temp, CV_BGR2GRAY);
 
     for (int i = 0; i < temp.rows; i++) {
         for (int j = 0; j < temp.cols; j++) {
             color = temp.at<uchar>(i, j);
-            if (color.val[0] == 0) {
-                qDebug()<< "("<< i<<", "<<j<<")";
+            if (color.val[0] == 255) {
+                //qDebug()<< "("<< i<<", "<<j<<")";
                 Rect rect;
                 floodFill(temp, Point(j, i), Scalar(comps.size()), &rect);
                 comps.push_back(rect);
@@ -131,15 +134,29 @@ void MainWindow::countConnected(Mat img) {
         }
     }
     vector<vector<Point> > contours;
+
+//    QImage showOutputImg3 = Mat2QImage(temp);
+//    ui->_label4->setPixmap(QPixmap::fromImage(showOutputImg3));
+
+
     findContours(temp, contours, RETR_EXTERNAL, CHAIN_APPROX_SIMPLE, Point(0, 0));
+
+    std::vector<cv::Vec4i> hierarchy;
+    for (std::size_t i = 0; i < contours.size(); i++) {
+        cv::drawContours(temp, contours, i, color, 2, 8, hierarchy);
+    }
+    ui->_label4->setPixmap(QPixmap::fromImage(Mat2QImage(temp)).scaled(this->ui->_label4->size()));
+
     int fingerNum = 0;
+    //qDebug()<<"======"<<contours.size();
     for (int i = 0; i < contours.size(); i++) {
     //calculate area
         int area = contourArea(contours[i]);
     //門檻值,判斷是否是手指
-//        qDebug()<< "area="<<area;
-        if (area > 10) {
+        qDebug()<< "area="<<area;
+        if (area > 20) {
             fingerNum++;
+            qDebug()<<area;
         }
     }
     //cout << "fingerNum= " << fingerNum << endl;
@@ -169,24 +186,22 @@ void MainWindow::countConnected(Mat img) {
 //void MainWindow::subtract(outputImg, palmImg, outputImg) {
 //}
 
-void MainWindow::on_Open_clicked()
-{
-    VideoCapture video(0); // 開攝影機
-    if(!video.isOpened())
-        qDebug() << "Could not open camera";
+void MainWindow::updatePicture() {
+    Mat videoFrame;
+    Mat QtVideoFrame;
 
-    while(true){
-        video >> videoFrame; // 讀Frame
-        if(videoFrame.empty()){
-            qDebug() << "video frame empty";
-            break;
-        }
-        waitKey(3000);
-        ui->Camera->setPixmap(QPixmap::fromImage(Mat2QImage(videoFrame)).scaled(this->ui->Camera->size())); //顯示
-        detection(videoFrame);
-        Mat grayImg, canny_output;
-        int thresh =30;
-        cvtColor(extractionImg, outputImg, CV_YCrCb2BGR);
+    cap >> videoFrame; // get a new frame from camera
+    QtVideoFrame=videoFrame.clone();
+
+    if(videoFrame.empty())
+        qDebug() << "video frame empty";
+    //imshow("wiffs", videoFrame);
+    detection(videoFrame);
+    ui->Camera->setPixmap(QPixmap::fromImage(Mat2QImage(QtVideoFrame)).scaled(this->ui->Camera->size())); //顯示
+
+    Mat grayImg, canny_output;
+    int thresh =30;
+    cvtColor(extractionImg, outputImg, CV_YCrCb2BGR);
         cvtColor(outputImg, grayImg, CV_BGR2GRAY);
         Canny( grayImg, canny_output, thresh, thresh*3, 3 );
         std::vector<std::vector<cv::Point> > contours;
@@ -197,6 +212,28 @@ void MainWindow::on_Open_clicked()
             cv::drawContours(outputImg, contours, i, color, 2, 8, hierarchy);
         }
         ui->Detect->setPixmap(QPixmap::fromImage(Mat2QImage(outputImg)).scaled(this->ui->Detect->size()));
+
+}
+
+void MainWindow::on_Open_clicked()
+{
+    cap = VideoCapture(0); // 開攝影機
+    if(!cap.isOpened())
+        qDebug() << "Could not open camera";
+    else{
+        timer = new QTimer(this);
+        timer->setInterval(200); // 設定每30ms觸發一次
+        connect(timer, SIGNAL(timeout()), this, SLOT(updatePicture()));
+        timer->start();
+
+        //VImage = videoFrame.clone();
+
+
+
+
+
+
+
 //        int IndexOfBiggestContour = findBiggestContour(contours); // 找最大輪廓
 //        std::vector<std::vector<int> >hull( contours.size() );
 //        std::vector<std::vector<int> >hullsI( contours.size() );

@@ -36,9 +36,12 @@ public:
 
 private slots:
     void on_Open_clicked();
+    void updatePicture();
 
 private:
     Ui::MainWindow *ui;
+    QTimer *timer;
+    VideoCapture cap;
 };
 
 #endif // MAINWINDOW_H
