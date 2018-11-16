@@ -14,7 +14,7 @@
    <string>MainWindow</string>
   </property>
   <widget class="QWidget" name="centralWidget">
-   <widget class="QLabel" name="Camera">
+   <widget class="QLabel" name="Input">
     <property name="geometry">
      <rect>
       <x>30</x>
@@ -27,7 +27,7 @@
      <enum>QFrame::Box</enum>
     </property>
     <property name="text">
-     <string>TextLabel</string>
+     <string>Input</string>
     </property>
    </widget>
    <widget class="QLabel" name="Detect">
@@ -43,7 +43,7 @@
      <enum>QFrame::Box</enum>
     </property>
     <property name="text">
-     <string>TextLabel</string>
+     <string>Detect</string>
     </property>
    </widget>
    <widget class="QPushButton" name="Open">
@@ -72,17 +72,17 @@
      <string>Close App</string>
     </property>
    </widget>
-   <widget class="QLabel" name="label_3">
+   <widget class="QLabel" name="NumberP">
     <property name="geometry">
      <rect>
-      <x>440</x>
-      <y>310</y>
-      <width>161</width>
+      <x>210</x>
+      <y>300</y>
+      <width>181</width>
       <height>31</height>
      </rect>
     </property>
     <property name="text">
-     <string>Gesture: </string>
+     <string>Number of people: </string>
     </property>
    </widget>
    <widget class="QLabel" name="_label">
@@ -135,6 +135,58 @@
     </property>
     <property name="text">
      <string>TextLabel</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="Recognition">
+    <property name="geometry">
+     <rect>
+      <x>430</x>
+      <y>290</y>
+      <width>150</width>
+      <height>50</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Face recognition</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="NewFace">
+    <property name="geometry">
+     <rect>
+      <x>430</x>
+      <y>360</y>
+      <width>150</width>
+      <height>50</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Add New Face</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="NumberF">
+    <property name="geometry">
+     <rect>
+      <x>210</x>
+      <y>360</y>
+      <width>181</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Number of faces: </string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="Name">
+    <property name="geometry">
+     <rect>
+      <x>610</x>
+      <y>300</y>
+      <width>181</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Name:</string>
     </property>
    </widget>
   </widget>
