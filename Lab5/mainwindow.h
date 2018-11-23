@@ -27,6 +27,8 @@ public:
     ~MainWindow();
     QImage Mat2QImage(Mat &);
     void HOG_SVM(Mat);
+    void detectAndDisplay(Mat);
+    void Recognizer();
 
 private slots:
     void on_Open_clicked();
