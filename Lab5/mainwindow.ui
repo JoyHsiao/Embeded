@@ -75,9 +75,9 @@
    <widget class="QLabel" name="NumberP">
     <property name="geometry">
      <rect>
-      <x>190</x>
+      <x>220</x>
       <y>300</y>
-      <width>241</width>
+      <width>181</width>
       <height>31</height>
      </rect>
     </property>
@@ -166,9 +166,9 @@
    <widget class="QLabel" name="NumberF">
     <property name="geometry">
      <rect>
-      <x>190</x>
+      <x>220</x>
       <y>360</y>
-      <width>211</width>
+      <width>181</width>
       <height>31</height>
      </rect>
     </property>
@@ -196,7 +196,7 @@
      <x>0</x>
      <y>0</y>
      <width>850</width>
-     <height>34</height>
+     <height>25</height>
     </rect>
    </property>
   </widget>
